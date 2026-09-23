@@ -1,0 +1,5 @@
+# raw downloads and intermediates: ~570 MB, all reproducible via scripts/
+/data/
+__pycache__/
+*.pyc
+.DS_Store
