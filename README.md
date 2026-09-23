@@ -80,6 +80,18 @@ automation, which has not been done.
 
 Empty cells mean **not retrieved**, never "taught nothing".
 
+## Publishing
+
+The site is published **only** to GitHub Pages at
+<https://alexjungaalto.github.io/who-gets-the-grants/>, served from the `docs/`
+folder of `main`. `publish.py` rebuilds `docs/` from `site/` on every run, so the
+local and published copies cannot drift:
+
+    python3 publish.py --dry-run     # show the steps, change nothing
+    python3 publish.py -m "what changed"
+
+There is no other deployment target.
+
 ## Rebuild
 
     python3 scripts/fetch_fwf.py              # ~20k FWF projects
