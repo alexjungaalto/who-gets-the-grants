@@ -65,6 +65,13 @@ def run(cmd, *, cwd=ROOT, check=True, capture=True, dry=False):
     return (p.stdout or "").strip()
 
 
+def run_code(cmd, cwd=ROOT):
+    """(returncode, stdout). Needed because `gh api` prints a 404 body to STDOUT,
+    so a non-empty stdout does NOT mean the resource exists."""
+    p = subprocess.run(cmd, cwd=cwd, text=True, capture_output=True)
+    return p.returncode, (p.stdout or "").strip()
+
+
 def step(msg):
     print(f"==> {msg}")
 
@@ -176,13 +183,15 @@ def ensure_pages(dry=False):
     if dry:
         print(f"    would enable Pages on {BRANCH} /{PAGES_DIR}")
         return
-    current = run(["gh", "api", f"repos/{OWNER}/{REPO}/pages",
-                   "--jq", ".source.branch + \" \" + .source.path"], check=False)
+    code, current = run_code(["gh", "api", f"repos/{OWNER}/{REPO}/pages",
+                              "--jq", ".source.branch + \" \" + .source.path"])
+    enabled = code == 0
+    current = current if enabled else ""
     want = f"{BRANCH} /{PAGES_DIR}"
     if current == want:
         print(f"    already serving {want}")
         return
-    verb = "PATCH" if current else "POST"
+    verb = "PATCH" if enabled else "POST"
     run(["gh", "api", "-X", verb, f"repos/{OWNER}/{REPO}/pages",
          "-f", f"source[branch]={BRANCH}", "-f", f"source[path]=/{PAGES_DIR}"])
     print(f"    Pages set to {want}" + (f" (was {current})" if current else ""))
